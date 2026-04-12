@@ -253,6 +253,45 @@
         </spacer>
        </item>
 
+       <item row="2" column="0">
+        <widget class="QLabel" name="TwoForTuesdayLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>2 for Tuesday!</string>
+         </property>
+         <property name="buddy">
+          <cstring>TwoForTuesdayCheckBox</cstring>
+         </property>
+        </widget>
+       </item>
+
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="TwoForTuesdayCheckBox">
+         <property name="toolTip">
+          <string>When adding a random track, also queue a second track from the same artist right after it.</string>
+         </property>
+        </widget>
+       </item>
+
+       <item row="2" column="2">
+        <spacer name="horizontalSpacerTwoForTuesday">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+        </spacer>
+       </item>
+
       </layout>
     </widget>
    </item>
