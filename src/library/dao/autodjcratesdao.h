@@ -26,6 +26,15 @@ class AutoDJCratesDAO : public QObject {
     // Get random track Id from library
     TrackId getRandomTrackIdFromLibrary(int iPlaylistId);
 
+    // Get the ID of a random track by the same artist from crates, excluding
+    // excludeId. Returns an invalid TrackId if none is found.
+    TrackId getRandomTrackIdByArtist(const QString& artist, TrackId excludeId);
+
+    // Get the ID of a random track by the same artist from the library (no
+    // crates configured), excluding excludeId.
+    TrackId getRandomTrackIdFromLibraryByArtist(
+            const QString& artist, int iPlaylistId, TrackId excludeId);
+
   private:
     // Disallow copy and assign.
     // (Isn't that normal for QObject subclasses?)
