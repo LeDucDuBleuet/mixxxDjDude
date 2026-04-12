@@ -35,6 +35,13 @@ class AutoDJCratesDAO : public QObject {
     TrackId getRandomTrackIdFromLibraryByArtist(
             const QString& artist, int iPlaylistId, TrackId excludeId);
 
+    // Count tracks by a given artist in the active auto-DJ crates.
+    int countTracksByArtist(const QString& artist);
+
+    // Count tracks by a given artist in the library (no crates configured),
+    // excluding deleted tracks.
+    int countLibraryTracksByArtist(const QString& artist);
+
   private:
     // Disallow copy and assign.
     // (Isn't that normal for QObject subclasses?)
