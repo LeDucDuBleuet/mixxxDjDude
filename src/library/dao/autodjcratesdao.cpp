@@ -1284,6 +1284,50 @@ TrackId AutoDJCratesDAO::getRandomTrackIdByArtist(const QString& artist, TrackId
     return TrackId();
 }
 
+int AutoDJCratesDAO::countTracksByArtist(const QString& artist) {
+    // If necessary, create the temporary auto-DJ-crates database.
+    createAndConnectAutoDjCratesDatabase();
+
+    QSqlQuery oQuery(m_database);
+    oQuery.prepare(
+            "SELECT COUNT(*)"
+            " FROM " AUTODJACTIVETRACKS_TABLE
+            " JOIN library ON library.id = " AUTODJACTIVETRACKS_TABLE
+            "." AUTODJCRATESTABLE_TRACKID
+            " WHERE library.artist = :artist");
+    oQuery.bindValue(":artist", artist);
+    if (!oQuery.exec()) {
+        LOG_FAILED_QUERY(oQuery);
+        return 0;
+    }
+    if (oQuery.next()) {
+        return oQuery.value(0).toInt();
+    }
+    return 0;
+}
+
+int AutoDJCratesDAO::countLibraryTracksByArtist(const QString& artist) {
+    // getRandomTrackId() would have already created the temporary auto-DJ-crates database.
+    QSqlQuery oQuery(m_database);
+    oQuery.prepare(
+            "SELECT COUNT(*)"
+            " FROM library"
+            " WHERE artist = :artist"
+            " AND location NOT IN ("
+            "     SELECT id FROM track_locations"
+            "     WHERE fs_deleted == 1 )"
+            " AND mixxx_deleted != 1");
+    oQuery.bindValue(":artist", artist);
+    if (!oQuery.exec()) {
+        LOG_FAILED_QUERY(oQuery);
+        return 0;
+    }
+    if (oQuery.next()) {
+        return oQuery.value(0).toInt();
+    }
+    return 0;
+}
+
 TrackId AutoDJCratesDAO::getRandomTrackIdFromLibraryByArtist(
         const QString& artist, int iPlaylistId, TrackId excludeId) {
     // getRandomTrackId() would have already created the temporary auto-DJ-crates database.
