@@ -32,6 +32,16 @@ DlgPrefAutoDJ::DlgPrefAutoDJ(QWidget* pParent,
             this,
             &DlgPrefAutoDJ::slotToggleRandomQueue);
 
+    // 2 for Tuesday: enable/disable the min-tracks spinbox
+    connect(TwoForTuesdayCheckBox,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+            &QCheckBox::checkStateChanged,
+#else
+            &QCheckBox::stateChanged,
+#endif
+            this,
+            &DlgPrefAutoDJ::slotToggleTwoForTuesday);
+
     setScrollSafeGuardForAllInputWidgets(this);
 }
 
@@ -84,6 +94,12 @@ void DlgPrefAutoDJ::slotUpdate() {
     // 2 for Tuesday: queue a same-artist track after each random track
     TwoForTuesdayCheckBox->setChecked(m_pConfig->getValue(
             ConfigKey("[Auto DJ]", "TwoForTuesday"), false));
+    TwoForTuesdayMinTracksSpinBox->setValue(m_pConfig->getValue(
+            ConfigKey("[Auto DJ]", "TwoForTuesdayMinTracks"), 2));
+    slotToggleTwoForTuesday(
+            m_pConfig->getValue<bool>(ConfigKey("[Auto DJ]", "TwoForTuesday"))
+                    ? Qt::Checked
+                    : Qt::Unchecked);
 }
 
 void DlgPrefAutoDJ::slotApply() {
@@ -107,6 +123,8 @@ void DlgPrefAutoDJ::slotApply() {
 
     m_pConfig->setValue(ConfigKey("[Auto DJ]", "TwoForTuesday"),
             TwoForTuesdayCheckBox->isChecked());
+    m_pConfig->setValue(ConfigKey("[Auto DJ]", "TwoForTuesdayMinTracks"),
+            TwoForTuesdayMinTracksSpinBox->value());
 }
 
 void DlgPrefAutoDJ::slotResetToDefaults() {
@@ -124,6 +142,8 @@ void DlgPrefAutoDJ::slotResetToDefaults() {
     CenterXfaderCheckBox->setChecked(false);
 
     TwoForTuesdayCheckBox->setChecked(false);
+    TwoForTuesdayMinTracksSpinBox->setEnabled(false);
+    TwoForTuesdayMinTracksSpinBox->setValue(2);
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
@@ -144,4 +164,12 @@ void DlgPrefAutoDJ::slotToggleRandomQueue(Qt::CheckState buttonState) {
 void DlgPrefAutoDJ::slotToggleRandomQueue(int buttonState) {
 #endif
     RandomQueueMinimumSpinBox->setEnabled(buttonState == Qt::Checked);
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+void DlgPrefAutoDJ::slotToggleTwoForTuesday(Qt::CheckState buttonState) {
+#else
+void DlgPrefAutoDJ::slotToggleTwoForTuesday(int buttonState) {
+#endif
+    TwoForTuesdayMinTracksSpinBox->setEnabled(buttonState == Qt::Checked);
 }
