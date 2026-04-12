@@ -1258,3 +1258,59 @@ TrackId AutoDJCratesDAO::getRandomTrackIdFromLibrary(int iPlaylistId) {
         return TrackId();
     }
 }
+
+TrackId AutoDJCratesDAO::getRandomTrackIdByArtist(const QString& artist, TrackId excludeId) {
+    // If necessary, create the temporary auto-DJ-crates database.
+    createAndConnectAutoDjCratesDatabase();
+
+    QSqlQuery oQuery(m_database);
+    oQuery.prepare(
+            "SELECT " AUTODJCRATESTABLE_TRACKID
+            " FROM " AUTODJACTIVETRACKS_TABLE
+            " JOIN library ON library.id = " AUTODJACTIVETRACKS_TABLE
+            "." AUTODJCRATESTABLE_TRACKID
+            " WHERE library.artist = :artist"
+            " AND " AUTODJACTIVETRACKS_TABLE "." AUTODJCRATESTABLE_TRACKID " != :excludeId"
+            " ORDER BY RANDOM() LIMIT 1");
+    oQuery.bindValue(":artist", artist);
+    oQuery.bindValue(":excludeId", excludeId.toVariant());
+    if (!oQuery.exec()) {
+        LOG_FAILED_QUERY(oQuery);
+        return TrackId();
+    }
+    if (oQuery.next()) {
+        return TrackId(oQuery.value(0));
+    }
+    return TrackId();
+}
+
+TrackId AutoDJCratesDAO::getRandomTrackIdFromLibraryByArtist(
+        const QString& artist, int iPlaylistId, TrackId excludeId) {
+    // getRandomTrackId() would have already created the temporary auto-DJ-crates database.
+    QSqlQuery oQuery(m_database);
+    oQuery.prepare(
+            " SELECT id"
+            " FROM library"
+            " WHERE artist = :artist"
+            " AND id != :excludeId"
+            " AND id NOT IN ("
+            "     SELECT track_id"
+            "     FROM PlaylistTracks"
+            "     WHERE playlist_id = :playlistId )"
+            " AND location NOT IN ("
+            "     SELECT id FROM track_locations"
+            "     WHERE fs_deleted == 1 )"
+            " AND mixxx_deleted != 1"
+            " ORDER BY RANDOM() LIMIT 1");
+    oQuery.bindValue(":artist", artist);
+    oQuery.bindValue(":excludeId", excludeId.toVariant());
+    oQuery.bindValue(":playlistId", iPlaylistId);
+    if (!oQuery.exec()) {
+        LOG_FAILED_QUERY(oQuery);
+        return TrackId();
+    }
+    if (oQuery.next()) {
+        return TrackId(oQuery.value(0));
+    }
+    return TrackId();
+}
