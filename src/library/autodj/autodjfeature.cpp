@@ -352,6 +352,32 @@ void AutoDJFeature::slotAddRandomTrack() {
         if (pRandomTrack) {
             m_pTrackCollection->getPlaylistDAO().appendTrackToPlaylist(
                     pRandomTrack->getId(), m_iAutoDJPlaylistId);
+
+            // "2 for Tuesday": try to queue a second track from the same artist
+            // right after the first one. Falls back silently if none is available.
+            const bool twoForTuesday = m_pConfig->getValue(
+                    ConfigKey("[Auto DJ]", "TwoForTuesday"), false);
+            const QString artist = pRandomTrack->getArtist();
+            if (twoForTuesday && !artist.isEmpty()) {
+                TrackId sameArtistId;
+                if (m_crateList.isEmpty()) {
+                    sameArtistId = m_autoDjCratesDao.getRandomTrackIdFromLibraryByArtist(
+                            artist, m_iAutoDJPlaylistId, pRandomTrack->getId());
+                } else {
+                    sameArtistId = m_autoDjCratesDao.getRandomTrackIdByArtist(
+                            artist, pRandomTrack->getId());
+                }
+                if (sameArtistId.isValid()) {
+                    TrackPointer pSameArtistTrack =
+                            m_pLibrary->trackCollectionManager()->getTrackById(sameArtistId);
+                    if (pSameArtistTrack &&
+                            pSameArtistTrack->getFileInfo().checkFileExists()) {
+                        m_pTrackCollection->getPlaylistDAO().appendTrackToPlaylist(
+                                pSameArtistTrack->getId(), m_iAutoDJPlaylistId);
+                    }
+                }
+            }
+
             m_pAutoDJView->onShow();
             return; // success
         }
